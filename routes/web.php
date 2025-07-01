@@ -129,3 +129,7 @@ Route::post('/fallas', [FallaController::class, 'store'])->name('fallas.store');
 Route::post('/fallas/enviar/{id}', [FallaController::class, 'enviarCorreo'])->name('fallas.enviar');
 Route::get('/fallas/pdf/{id}', [FallaController::class, 'generarPDF'])->name('fallas.pdf');
 
+
+Route::put('/update_user/{id}', [UsuarioController::class, 'update'])->name('update_user');
+
+

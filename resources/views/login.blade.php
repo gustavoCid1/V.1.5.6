@@ -1,59 +1,182 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - FontTrack</title>
-    <link rel="icon" type="image/png" href="{{ asset('img/logo.png') }}">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Inicia Sesión – FontTrack</title>
+    <link rel="icon" href="{{ asset('img/logo.png') }}" type="image/png" />
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
 
-    {{-- Bootstrap CSS para el modal --}}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    {{-- Bootstrap CSS --}}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    {{-- Google Fonts --}}
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700" rel="stylesheet">
 
     <style>
-        /* ===== Estilos Generales de la Página ===== */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #FCE8D5;
-            color: #634D3B;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        /* ───────── Reset & Base ───────── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
             margin: 0;
+            padding: 0;
         }
 
-        /* ===== Card del Login ===== */
-        .card {
-            background-color: #FFF;
-            padding: 40px 30px;
+        html {
+            font-size: 16px;
+        }
+
+        body {
+            font-family: "Lato", Arial, sans-serif;
+            color: #634D3B;
+            height: 100vh;
+            background: #F9E5D5;
+            overflow: auto;
+        }
+
+        /* ───────── Animación de entrada ───────── */
+        .transition-circle {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #634D3B 0%, #E38B5B 50%, #F4A978 100%);
+            border-radius: 50%;
+            z-index: 9998;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(35);
+            animation: shrinkIn 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        @keyframes shrinkIn {
+            to {
+                transform: translate(-50%, -50%) scale(0);
+            }
+        }
+
+        /* ───────── Animated Blobs ───────── */
+        .blob-container {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .blob {
+            position: absolute;
+            width: 60vmin;
+            aspect-ratio: 1;
+            border-radius: 40% 60% 30% 70% / 50% 30% 70% 50%;
+            opacity: .4;
+            animation: blobMove infinite ease-in-out;
+        }
+
+        .blob:nth-child(1) {
+            background: #E38B5B;
+            top: -10%;
+            left: -10%;
+            animation-duration: 12s;
+        }
+
+        .blob:nth-child(2) {
+            background: #F6B88F;
+            top: 60%;
+            left: 5%;
+            animation-duration: 10s;
+        }
+
+        .blob:nth-child(3) {
+            background: #C49A6C;
+            top: 20%;
+            left: 70%;
+            animation-duration: 8s;
+        }
+
+        .blob:nth-child(4) {
+            background: #E38B5B;
+            top: 40%;
+            left: 85%;
+            animation-duration: 15s;
+            width: 40vmin;
+        }
+
+        .blob:nth-child(5) {
+            background: #F6B88F;
+            top: 10%;
+            left: 40%;
+            animation-duration: 14s;
+            width: 30vmin;
+        }
+
+        @keyframes blobMove {
+            0% {
+                transform: scale(1) translate(0, 0) rotate(0deg);
+                border-radius: 40% 60% 30% 70% / 50% 30% 70% 50%;
+            }
+
+            33% {
+                transform: scale(1.2) translate(20px, -30px) rotate(120deg);
+                border-radius: 60% 40% 70% 30% / 30% 70% 50% 50%;
+            }
+
+            66% {
+                transform: scale(0.8) translate(-20px, 30px) rotate(240deg);
+                border-radius: 30% 70% 50% 50% / 40% 60% 30% 70%;
+            }
+
+            100% {
+                transform: scale(1) translate(0, 0) rotate(360deg);
+                border-radius: 40% 60% 30% 70% / 50% 30% 70% 50%;
+            }
+        }
+
+        /* ───────── Glassmorphism Card ───────── */
+        .login-card {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 400px;
+            padding: 2.5rem 2rem;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 12px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-            width: 100%;
-            max-width: 400px;
-            box-sizing: border-box;
+            z-index: 1;
+            opacity: 0;
+            animation: fadeInUp 1s ease-out 0.5s forwards;
         }
 
-        .title {
-            font-size: 1.7em;
-            margin-bottom: 20px;
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -40%) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .login-card .title {
+            text-align: center;
+            font-size: 1.75rem;
             color: #E38B5B;
             font-weight: bold;
-            text-align: center;
-        }
-
-        .field {
-            margin-bottom: 18px;
+            margin-bottom: 1.5rem;
         }
 
         .input-field {
             width: 100%;
-            padding: 10px 14px;
+            margin-bottom: 1rem;
+            padding: .75rem 1rem;
             border: 1px solid #E0C4AA;
             border-radius: 8px;
-            font-size: 1em;
-            background-color: #fffaf6;
-            transition: border-color 0.3s ease;
+            background: #fffaf6;
+            transition: border-color .3s;
         }
 
         .input-field:focus {
@@ -63,47 +186,126 @@
 
         .alert {
             display: block;
-            margin-top: 6px;
-            font-size: 0.88em;
+            font-size: .875rem;
             color: #D9534F;
+            margin: -0.5rem 0 1rem;
         }
 
-        /* ===== Botones ===== */
-        .btn,
-        .btn-secondary {
-            display: inline-block;
-            background-color: #E38B5B;
-            color: white;
-            font-weight: bold;
-            padding: 10px 16px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1em;
-            cursor: pointer;
-            text-align: center;
+        /* ───────── Animated Buttons ───────── */
+        .btn-animated {
+            text-transform: uppercase;
             text-decoration: none;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            font-weight: 700;
+            border: 0;
+            position: relative;
+            letter-spacing: 0.15em;
+            margin: 0.5rem auto;
+            padding: 1rem 2.5rem;
+            background: transparent;
+            outline: none;
+            font-size: 1rem;
+            color: #634D3B;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.15s;
+            cursor: pointer;
+            display: block;
             width: 100%;
-            box-sizing: border-box;
+            border-radius: 8px;
         }
 
-        .btn:hover,
-        .btn-secondary:hover {
+        .btn-animated::after,
+        .btn-animated::before {
+            border: 0;
+            content: "";
+            position: absolute;
+            height: 40%;
+            width: 10%;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: -10;
+            border-radius: 50%;
+        }
+
+        .btn-animated.btn-primary::before {
             background-color: #D1784C;
-            transform: scale(1.02);
+            top: -0.75rem;
+            left: 0.5rem;
+            animation: topAnimation 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.25s infinite alternate;
         }
 
-        .btn-secondary {
+        .btn-animated.btn-primary::after {
+            background-color: #E38B5B;
+            top: 3rem;
+            left: calc(100% - 2rem);
+            animation: bottomAnimation 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.5s infinite alternate;
+        }
+
+        .btn-animated.btn-secondary::before {
+            background-color: #A9866A;
+            top: -0.75rem;
+            left: 0.5rem;
+            animation: topAnimation 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.25s infinite alternate;
+        }
+
+        .btn-animated.btn-secondary::after {
             background-color: #c49a6c;
-            margin-top: 10px;
+            top: 3rem;
+            left: calc(100% - 2rem);
+            animation: bottomAnimation 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.5s infinite alternate;
+        }
+
+        .btn-animated:hover {
+            color: white;
+        }
+
+        .btn-animated:hover::before,
+        .btn-animated:hover::after {
+            top: 0;
+            height: 100%;
+            width: 100%;
+            border-radius: 8px;
+            animation: none;
+        }
+
+        .btn-animated:hover::after {
+            left: 0rem;
+        }
+
+        .btn-animated:hover::before {
+            top: 0rem;
+            left: 0rem;
+        }
+
+        @keyframes topAnimation {
+            from {
+                transform: translate(0rem, 0);
+            }
+            to {
+                transform: translate(0rem, 3.5rem);
+            }
+        }
+
+        @keyframes bottomAnimation {
+            from {
+                transform: translate(-80%, 0);
+            }
+            to {
+                transform: translate(0rem, 0);
+            }
+        }
+
+        /* ── Clase para centrar "Regresar" ── */
+        .btn-secondary.center-btn {
+            display: block;
+            margin: 1rem auto 0;
+            text-align: center;
+            width: 100%;
         }
 
         .btn-link {
             display: block;
-            margin-top: 12px;
+            margin-top: 1rem;
             text-align: center;
             color: #634D3B;
-            font-size: 0.95em;
+            font-size: .9rem;
             text-decoration: none;
         }
 
@@ -111,13 +313,11 @@
             color: #E38B5B;
         }
 
-        /* ===== Estilos para Inputs y Selects del Modal ===== */
-        /* Sobrescribimos ligeramente .form-control de Bootstrap para que combine con nuestro tema */
+        /* ───────── Modal Overrides ───────── */
         .modal .form-control {
-            background-color: #fffaf6;
+            background: #fffaf6;
             border: 1px solid #E0C4AA;
             border-radius: 6px;
-            transition: border-color 0.3s ease;
         }
 
         .modal .form-control:focus {
@@ -125,103 +325,146 @@
             box-shadow: none;
         }
 
-        /* Encabezado del Modal */
         .modal-header {
-            background-color: #F6B88F;
+            background: #F6B88F;
             border-bottom: 2px solid #E38B5B;
         }
 
         .modal-title {
             color: #634D3B;
             font-weight: bold;
-            font-size: 1.2em;
         }
 
-        /* Botones del Modal */
         .modal .btn-primary {
-            background-color: #E38B5B;
+            background: #E38B5B;
             border: none;
             border-radius: 6px;
-            padding: 8px 14px;
-            font-weight: bold;
-            transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
         .modal .btn-primary:hover {
-            background-color: #D1784C;
-            transform: scale(1.05);
+            background: #D1784C;
         }
 
         .modal .btn-secondary {
-            background-color: #c49a6c;
+            background: #c49a6c;
             border: none;
             border-radius: 6px;
-            padding: 8px 14px;
-            font-weight: bold;
-            transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
         .modal .btn-secondary:hover {
-            background-color: #A9866A;
-            transform: scale(1.05);
+            background: #A9866A;
+        }
+
+        /* ───────── Responsive: Tablets ───────── */
+        @media (max-width: 768px) {
+            .login-card {
+                width: 95%;
+                padding: 2rem 1.5rem;
+            }
+
+            .login-card .title {
+                font-size: 1.5rem;
+            }
+
+            .input-field {
+                padding: .65rem .85rem;
+            }
+
+            .btn-animated {
+                padding: .65rem 2rem;
+                font-size: 0.9rem;
+            }
+
+            .blob {
+                width: 50vmin;
+            }
+
+            .blob:nth-child(4) {
+                width: 35vmin;
+            }
+
+            .blob:nth-child(5) {
+                width: 25vmin;
+            }
+        }
+
+        /* ───────── Responsive: Móviles ───────── */
+        @media (max-width: 576px) {
+            html {
+                font-size: 14px;
+            }
+
+            .login-card {
+                padding: 1.5rem 1rem;
+            }
+
+            .login-card .title {
+                font-size: 1.25rem;
+            }
+
+            .input-field {
+                padding: .5rem .75rem;
+                font-size: .9rem;
+            }
+
+            .btn-animated {
+                padding: .5rem 1.5rem;
+                font-size: .9rem;
+            }
+
+            .blob {
+                width: 40vmin;
+            }
+
+            .blob:nth-child(4) {
+                width: 30vmin;
+            }
+
+            .blob:nth-child(5) {
+                width: 20vmin;
+            }
         }
     </style>
 </head>
 
 <body>
-    {{-- Card de Login --}}
-    <div class="card">
-        <h4 class="title">Inicia Sesión</h4>
+    {{-- Círculo de transición de entrada --}}
+    <div class="transition-circle" id="transitionCircle"></div>
 
-        <form method="POST" action="{{ route('login') }}">
+    {{-- Blobs animados de fondo --}}
+    <div class="blob-container">
+        <div class="blob"></div>
+        <div class="blob"></div>
+        <div class="blob"></div>
+        <div class="blob"></div>
+        <div class="blob"></div>
+    </div>
+
+    {{-- Tarjeta de Login --}}
+    <div class="login-card">
+        <h4 class="title">Inicia Sesión</h4>
+        <form method="POST" action="{{ route('login') }}" id="loginForm">
             @csrf
 
-            <div class="field">
-                <input
-                    autocomplete="off"
-                    id="logemail"
-                    placeholder="Correo"
-                    class="input-field"
-                    name="correo"
-                    type="email"
-                    required
-                    value="{{ old('correo') }}"
-                >
-                @if ($errors->has('correo'))
-                    <span class="alert">{{ $errors->first('correo') }}</span>
-                @endif
-            </div>
+            <input id="logemail" name="correo" type="email" class="input-field" placeholder="Correo" required
+                autocomplete="off" value="{{ old('correo') }}">
+            @error('correo') <span class="alert">{{ $message }}</span> @enderror
+            <span class="alert" id="emailError" style="display: none;">El correo debe ser del dominio @bonafont.com</span>
 
-            <div class="field">
-                <input
-                    autocomplete="off"
-                    id="logpass"
-                    placeholder="Contraseña"
-                    class="input-field"
-                    name="password"
-                    type="password"
-                    required
-                >
-                @if ($errors->has('password'))
-                    <span class="alert">{{ $errors->first('password') }}</span>
-                @endif
-            </div>
+            <input id="logpass" name="password" type="password" class="input-field" placeholder="Contraseña" required
+                autocomplete="off">
+            @error('password') <span class="alert">{{ $message }}</span> @enderror
 
-            <button class="btn" type="submit">Entrar</button>
-            <a href="{{ url('/') }}" class="btn-secondary">Regresar</a>
-            {{-- Botón que abre el modal --}}
-            <a
-                href="#"
-                class="btn-link"
-                data-bs-toggle="modal"
-                data-bs-target="#modalRegistro"
-                id="btnNuevoUsuario"
-            >Registrar</a>
+            <button type="submit" class="btn-animated btn-primary">Entrar</button>
+            <a href="{{ url('/') }}" class="btn-animated btn-secondary center-btn">Regresar</a>
+            <a href="#" class="btn-link" data-bs-toggle="modal" data-bs-target="#modalRegistro"
+                id="btnNuevoUsuario">Registrar</a>
             <a href="#" class="btn-link">¿Olvidaste tu contraseña?</a>
+            <img src="{{ asset('img/by.png') }}" alt="by" style="display: block; margin: 1rem auto; max-width: 150px;">
         </form>
     </div>
 
-    {{-- Modal Registro/Edición --}}
+    {{-- Modal de Registro/Edición --}}
     <div class="modal fade" id="modalRegistro" tabindex="-1" aria-labelledby="modalRegistroLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -230,8 +473,10 @@
                     <input type="hidden" id="usuarioId" name="id_usuario">
 
                     <div class="modal-header">
-                        <h5 class="modal-title" id="modalRegistroLabel">Registrar / Editar Usuario</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        <h5 class="modal-title" id="modalRegistroLabel">
+                            Registrar Usuario
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
 
                     <div class="modal-body">
@@ -239,105 +484,138 @@
                             <label for="nombre" class="form-label">Nombre:</label>
                             <input type="text" id="nombre" name="nombre" class="form-control" required>
                         </div>
-
                         <div class="mb-3">
                             <label for="correoRegistro" class="form-label">Correo:</label>
                             <input type="email" id="correoRegistro" name="correo" class="form-control" required>
+                            <small class="text-muted">Debe ser un correo @bonafont.com</small>
                         </div>
-
                         <div class="mb-3">
-                            <label for="passwordRegistro" class="form-label">Contraseña:</label>
-                            <input type="password" id="passwordRegistro" name="password" class="form-control">
+                            <label for="passwordRegistro" class="form-label">
+                                Contraseña:
+                            </label>
+                            <input type="password" id="passwordRegistro" name="password" class="form-control" required>
                         </div>
-
+                        <input type="hidden" id="tipo_usuario" name="tipo_usuario" value="2">
                         <div class="mb-3">
-                            <label for="tipo_usuario" class="form-label">Tipo de Usuario:</label>
-                            <select id="tipo_usuario" name="tipo_usuario" class="form-control">
-                                <option value="1">Admin</option>
-                                <option value="2">Usuario</option>
-                            </select>
+                            <label for="foto_usuario" class="form-label">
+                                Foto de Perfil:
+                            </label>
+                            <input type="file" id="foto_usuario" name="foto_usuario" class="form-control"
+                                accept="image/png, image/jpeg">
+                            <small class="text-muted">Si no selecciona una imagen, se usará la foto por defecto</small>
                         </div>
-
                         <div class="mb-3">
-                            <label for="foto_usuario" class="form-label">Seleccionar Foto:</label>
-                            <input
-                                type="file"
-                                id="foto_usuario"
-                                name="foto_usuario"
-                                class="form-control"
-                                accept="image/png, image/jpeg"
-                            >
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="id_lugar" class="form-label">Seleccionar Lugar:</label>
+                            <label for="id_lugar" class="form-label">Lugar:</label>
                             <select id="id_lugar" name="id_lugar" class="form-control">
                                 @foreach($lugares as $lugar)
-                                    <option value="{{ $lugar->id_lugar }}">{{ $lugar->nombre }}</option>
+                                    <option value="{{ $lugar->id_lugar }}">
+                                        {{ $lugar->nombre }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            Cerrar
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            Guardar
-                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    {{-- Bootstrap JS (para el modal) --}}
+    {{-- Bootstrap JS & jQuery --}}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    {{-- JQuery para el envío AJAX --}}
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
     <script>
-        // Envío del formulario (crear/actualizar usuario) mediante AJAX
+        // Animación de entrada
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                document.getElementById('transitionCircle').style.display = 'none';
+            }, 1500);
+        });
+
+        // Validación de correo @bonafont.com en login
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const email = document.getElementById('logemail').value;
+            const emailError = document.getElementById('emailError');
+            
+            if (!email.endsWith('@bonafont.com')) {
+                e.preventDefault();
+                emailError.style.display = 'block';
+                return false;
+            } else {
+                emailError.style.display = 'none';
+            }
+        });
+
+        // Validación en tiempo real
+        document.getElementById('logemail').addEventListener('input', function() {
+            const email = this.value;
+            const emailError = document.getElementById('emailError');
+            
+            if (email && !email.endsWith('@bonafont.com')) {
+                emailError.style.display = 'block';
+            } else {
+                emailError.style.display = 'none';
+            }
+        });
+
+        // AJAX registro/edición
         $('#formRegistro').submit(function (e) {
             e.preventDefault();
-            let usuarioId = $('#usuarioId').val();
-            let formData = new FormData(this);
-            let url = usuarioId
-                ? `/modal/update_user/${usuarioId}`
-                : `/modal/register_user`;
-            let method = usuarioId ? 'PUT' : 'POST';
+            
+            // Validar correo @bonafont.com en registro
+            const correoRegistro = $('#correoRegistro').val();
+            if (!correoRegistro.endsWith('@bonafont.com')) {
+                alert('El correo debe ser del dominio @bonafont.com');
+                return false;
+            }
+            
+            const id = $('#usuarioId').val();
+            const url = id ? `/modal/update_user/${id}` : `/modal/register_user`;
+            const method = id ? 'PUT' : 'POST';
+            const data = new FormData(this);
+            
+            // Si no hay foto seleccionada, agregar la foto por defecto
+            if (!$('#foto_usuario')[0].files.length) {
+                data.append('foto_default', 'Sin_Foto.png');
+            }
 
             $.ajax({
-                url: url,
-                type: method,
-                data: formData,
+                url, method, data,
                 processData: false,
                 contentType: false,
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                success(res) { 
+                    alert(res.message); 
+                    location.reload(); 
                 },
-                success: function (response) {
-                    alert(response.message);
-                    location.reload();
-                },
-                error: function (xhr) {
-                    let errors = xhr.responseJSON.errors;
-                    let errorMsg = '';
-                    $.each(errors, function (key, value) {
-                        errorMsg += value + '\n';
-                    });
-                    alert(errorMsg);
+                error(err) {
+                    const msgs = err.responseJSON?.errors || {};
+                    alert(Object.values(msgs).flat().join('\n'));
                 }
             });
         });
 
-        // Al abrir el modal para nuevo usuario, se resetea el formulario
-        $('#btnNuevoUsuario').click(function () {
+        // Reset al abrir modal
+        $('#btnNuevoUsuario').on('click', function () {
             $('#formRegistro')[0].reset();
             $('#usuarioId').val('');
+            $('#tipo_usuario').val('2'); // Siempre usuario
+        });
+
+        // Validación en tiempo real para registro
+        $('#correoRegistro').on('input', function() {
+            const email = $(this).val();
+            if (email && !email.endsWith('@bonafont.com')) {
+                $(this).addClass('is-invalid');
+            } else {
+                $(this).removeClass('is-invalid');
+            }
         });
     </script>
 </body>
+
 </html>

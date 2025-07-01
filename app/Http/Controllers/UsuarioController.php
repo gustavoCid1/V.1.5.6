@@ -10,11 +10,11 @@ use Illuminate\Support\Facades\Hash;
 
 class UsuarioController extends Controller
 {
+    // Listado de usuarios paginados (10 por página)
     public function index()
     {
-        $usuarios = Usuarios::with('lugar')->get();
+        $usuarios = Usuarios::with('lugar')->paginate(10);
         $lugares = Lugar::all();
-
         return view('index', compact('usuarios', 'lugares'));
     }
 
@@ -35,7 +35,8 @@ class UsuarioController extends Controller
             $archivo->move(public_path('img'), $nombreFoto);
             $validated['foto_usuario'] = $nombreFoto;
         } else {
-            $validated['foto_usuario'] = null;
+            // Asignar imagen predeterminada en creación
+            $validated['foto_usuario'] = 'Sin_Foto.png';
         }
 
         $validated['password'] = Hash::make($validated['password']);
@@ -48,35 +49,16 @@ class UsuarioController extends Controller
         ], 201);
     }
 
-    public function show($id_usuario)
+    public function update(Request $request, $id)
     {
-        $usuario = Usuarios::with('lugar')->find($id_usuario);
-        if (!$usuario) {
-            return response()->json(['error' => 'Usuario no encontrado'], 404);
-        }
-        return response()->json(['data' => $usuario]);
-    }
-
-    public function edit($id_usuario)
-    {
-        $usuario = Usuarios::with('lugar')->find($id_usuario);
-        $lugares = Lugar::all();
-        if (!$usuario) {
-            return response()->json(['error' => 'Usuario no encontrado'], 404);
-        }
-        return response()->json(['data' => $usuario, 'lugares' => $lugares]);
-    }
-
-    public function update(Request $request, $id_usuario)
-    {
-        $usuario = Usuarios::find($id_usuario);
+        $usuario = Usuarios::find($id);
         if (!$usuario) {
             return response()->json(['error' => 'Usuario no encontrado'], 404);
         }
 
         $validated = $request->validate([
             'nombre'       => 'sometimes|required|string|max:255',
-            'correo'       => 'sometimes|required|email|unique:tb_users,correo,' . $id_usuario . ',id_usuario|max:255',
+            'correo'       => 'sometimes|required|email|unique:tb_users,correo,' . $id . ',id_usuario|max:255',
             'password'     => 'nullable|min:6',
             'tipo_usuario' => 'sometimes|required|integer',
             'foto_usuario' => 'nullable|image|mimes:jpeg,png|max:2048',
@@ -84,16 +66,24 @@ class UsuarioController extends Controller
         ]);
 
         if ($request->hasFile('foto_usuario')) {
-            if ($usuario->foto_usuario && file_exists(public_path('img/' . $usuario->foto_usuario))) {
+            // Si ya existe una foto y NO es la predeterminada, la eliminamos
+            if ($usuario->foto_usuario && $usuario->foto_usuario !== 'Sin_Foto.png' &&
+                file_exists(public_path('img/' . $usuario->foto_usuario))) {
                 unlink(public_path('img/' . $usuario->foto_usuario));
             }
             $archivo = $request->file('foto_usuario');
             $nombreFoto = time() . '_' . uniqid() . '.' . $archivo->getClientOriginalExtension();
             $archivo->move(public_path('img'), $nombreFoto);
             $validated['foto_usuario'] = $nombreFoto;
+        } else {
+            // Si no se envía un nuevo archivo, mantenemos la foto actual.
+            // Opcional: Si el usuario no tiene foto asignada, se establece la predeterminada.
+            if (!$usuario->foto_usuario) {
+                $validated['foto_usuario'] = 'Sin_Foto.png';
+            }
         }
 
-        if (!empty($validated['password'])) {
+        if (isset($validated['password']) && !empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
         } else {
             unset($validated['password']);
@@ -107,14 +97,34 @@ class UsuarioController extends Controller
         ]);
     }
 
-    public function destroy($id_usuario)
+    public function show($id)
     {
-        $usuario = Usuarios::find($id_usuario);
+        $usuario = Usuarios::with('lugar')->find($id);
+        if (!$usuario) {
+            return response()->json(['error' => 'Usuario no encontrado'], 404);
+        }
+        return response()->json(['data' => $usuario]);
+    }
+
+    public function edit($id)
+    {
+        $usuario = Usuarios::with('lugar')->find($id);
+        $lugares = Lugar::all();
+        if (!$usuario) {
+            return response()->json(['error' => 'Usuario no encontrado'], 404);
+        }
+        return response()->json(['data' => $usuario, 'lugares' => $lugares]);
+    }
+
+    public function destroy($id)
+    {
+        $usuario = Usuarios::find($id);
         if (!$usuario) {
             return response()->json(['error' => 'Usuario no encontrado'], 404);
         }
 
-        if ($usuario->foto_usuario && file_exists(public_path('img/' . $usuario->foto_usuario))) {
+        if ($usuario->foto_usuario && $usuario->foto_usuario !== 'Sin_Foto.png' &&
+            file_exists(public_path('img/' . $usuario->foto_usuario))) {
             unlink(public_path('img/' . $usuario->foto_usuario));
         }
 
@@ -159,14 +169,15 @@ class UsuarioController extends Controller
         return redirect()->route('login');
     }
 
-    public function modalShowUser($id_usuario)
+    // Funciones para uso vía MODAL (AJAX) utilizando la misma lógica
+    public function modalShowUser($id)
     {
-        return $this->show($id_usuario);
+        return $this->show($id);
     }
 
-    public function modalEditUser($id_usuario)
+    public function modalEditUser($id)
     {
-        return $this->edit($id_usuario);
+        return $this->edit($id);
     }
 
     public function modalStoreUser(Request $request)
@@ -174,13 +185,13 @@ class UsuarioController extends Controller
         return $this->store($request);
     }
 
-    public function modalUpdateUser(Request $request, $id_usuario)
+    public function modalUpdateUser(Request $request, $id)
     {
-        return $this->update($request, $id_usuario);
+        return $this->update($request, $id);
     }
 
-    public function modalDeleteUser($id_usuario)
+    public function modalDeleteUser($id)
     {
-        return $this->destroy($id_usuario);
+        return $this->destroy($id);
     }
 }
